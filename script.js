@@ -1,7 +1,7 @@
-import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+import { GoogleGenAI } from "https://esm.run/@google/genai";
 
-const ai = new GoogleGenerativeAI({
-  apiKey: "AIzaSyDGOEA2AtjXUCKmO45RLr3t535438aFFsk"
+const ai = new GoogleGenAI({
+  apiKey: "AIzaSyDGOEA2AtjXUCKmO45RLr3t535438aFFsk" // ⚠️ solo para pruebas
 });
 
 const chatBox = document.getElementById("chat-box");
@@ -13,7 +13,7 @@ function addMessage(text, sender) {
   msg.classList.add("message", sender);
   msg.textContent = text;
   chatBox.appendChild(msg);
-  chatBox.scrollTop = chatBox.scrollHeight; // auto scroll
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 sendBtn.addEventListener("click", async () => {
@@ -26,14 +26,14 @@ sendBtn.addEventListener("click", async () => {
   addMessage("⏳ Pensando...", "bot");
 
   try {
-    const result = await ai.getGenerativeModel({ model: "gemini-2.5-flash" })
-      .generateContent(pregunta);
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: pregunta,
+    });
 
-    const output = result.response.text || 
-      result.response.candidates?.[0]?.content?.parts?.[0]?.text || 
-      "⚠️ No se pudo generar respuesta";
+    const output = response.text || "⚠️ No se pudo generar respuesta";
 
-    // eliminar "pensando..."
+    // quitar el "Pensando..."
     chatBox.lastChild.remove();
 
     addMessage(output, "bot");
