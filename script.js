@@ -1,8 +1,5 @@
-import { GoogleGenAI } from "https://esm.run/@google/genai";
-
-const ai = new GoogleGenAI({
-  apiKey: "AIzaSyDGOEA2AtjXUCKmO45RLr3t535438aFFsk" // ⚠️ solo para pruebas
-});
+const API_KEY = "AIzaSyDGOEA2AtjXUCKmO45RLr3t535438aFFsk";
+const MODEL = "gemini-2.5-flash";
 
 const chatBox = document.getElementById("chat-box");
 const input = document.getElementById("prompt");
@@ -26,17 +23,30 @@ sendBtn.addEventListener("click", async () => {
   addMessage("⏳ Pensando...", "bot");
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: pregunta,
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: pregunta }] }]
+        }),
+      }
+    );
 
-    const output = response.text || "⚠️ No se pudo generar respuesta";
+    const data = await response.json();
 
-    // quitar el "Pensando..."
+    // quitar "pensando..."
     chatBox.lastChild.remove();
 
-    addMessage(output, "bot");
+    if (data.candidates && data.candidates.length > 0) {
+      const output = data.candidates[0].content.parts[0].text;
+      addMessage(output, "bot");
+    } else {
+      addMessage("⚠️ No se pudo generar respuesta.", "bot");
+    }
 
   } catch (error) {
     console.error("Error con la API:", error);
